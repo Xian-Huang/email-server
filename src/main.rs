@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use emailserver::health_check;
 
 
 async fn greet(req:HttpRequest)->impl Responder{
@@ -7,7 +8,7 @@ async fn greet(req:HttpRequest)->impl Responder{
 }
 
 #[tokio::main]
-async fn main()->std::io::Result<()> {
+pub async fn main()->std::io::Result<()> {
     HttpServer::new(||{
         App::new()
         .route("/", web::get().to(greet))
@@ -20,7 +21,3 @@ async fn main()->std::io::Result<()> {
 }
 
 
-// 健康检查器
-async fn health_check(_req:HttpRequest)->impl Responder{
-    HttpResponse::Ok().finish()
-}
