@@ -6,11 +6,12 @@ use sqlx::{AnyConnection, Connection, MySqlConnection};
 
 #[tokio::test]
 async fn database_connect(){
-
     let connect_url = get_config().unwrap().database.connext_string();
-    dbg!(&connect_url);
-    MySqlConnection::connect(&connect_url).await.expect("Faile to connect database");
-    
+    let mut connection = MySqlConnection::connect(&connect_url).await.expect("Faile to connect database");
+    println!("connect to {connect_url} sccuess");
+    let saved = sqlx::query!("SELECT email,name FROM subscriptions",).fetch_one(&mut connection).await.expect("query error");
+    assert_eq!(saved.name,"test");
+    assert_eq!(saved.email,"test");
 }
 
 
