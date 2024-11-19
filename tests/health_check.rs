@@ -1,5 +1,19 @@
 use std::net::TcpListener;
 
+use emailserver::configurations::get_config;
+use sqlx::{AnyConnection, Connection, MySqlConnection};
+
+
+#[tokio::test]
+async fn database_connect(){
+
+    let connect_url = get_config().unwrap().database.connext_string();
+    dbg!(&connect_url);
+    MySqlConnection::connect(&connect_url).await.expect("Faile to connect database");
+    
+}
+
+
 
 
 
