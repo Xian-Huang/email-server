@@ -1,6 +1,7 @@
 use std::net::TcpListener;
 pub mod configurations;
 use actix_web::{body::BoxBody, dev::Server, http::StatusCode, web::{self, Form}, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use sqlx::MySqlConnection;
 
 
 
@@ -9,7 +10,6 @@ struct FormData{
     name:String,
     email:String
 }
-
 
 
 
@@ -24,21 +24,21 @@ async fn greet(req: HttpRequest) -> impl Responder {
 }
 
 
-async fn subscribe(form:Form<FormData>)->HttpResponse{
-    // HttpResponse::with_body(StatusCode::OK, BoxBody::new(format!("{:?}",form)))
+async fn subscribe(form:Form<FormData>,connection:web::Data<MySqlConnection>)->HttpResponse{
     HttpResponse::Ok().finish()
 
 }
 
-pub fn run(listener:TcpListener) -> Result<Server, std::io::Error> {
+pub fn run(listener:TcpListener,dbconnection:MySqlConnection) -> Result<Server, std::io::Error> {
     let port= listener.local_addr().unwrap().port();
 
-    let server = HttpServer::new(|| {
+    let connection = web::Data::new(dbconnection);
+    let server = HttpServer::new(move|| {
         App::new()
             .route("/", web::get().to(greet))
             .route("/health_check", web::get().to(health_check))
             .route("/subscribe", web::post().to(subscribe))
-
+            .app_data(connection.clone())
     })
     .listen(listener)?
     .run();

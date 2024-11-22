@@ -1,7 +1,7 @@
 use std::net::TcpListener;
 
 use emailserver::configurations::get_config;
-use sqlx::{AnyConnection, Connection, MySqlConnection};
+use sqlx::{Connection, MySqlConnection};
 
 
 #[tokio::test]
@@ -10,6 +10,7 @@ async fn database_connect(){
     let mut connection = MySqlConnection::connect(&connect_url).await.expect("Faile to connect database");
     println!("connect to {connect_url} sccuess");
     let saved = sqlx::query!("SELECT email,name FROM subscriptions",).fetch_one(&mut connection).await.expect("query error");
+    println!("{}-{}",saved.name,saved.email);
     assert_eq!(saved.name,"test");
     assert_eq!(saved.email,"test");
 }
@@ -21,10 +22,8 @@ async fn database_connect(){
 #[tokio::test]
 async fn health_check(){
 
-    let address = spawn_app();
-
+    let address = spawn_app().await;
     let client = reqwest::Client::new();
-
     let response = client.get(format!("{}/health_check",&address))
     .send()
     .await
@@ -37,7 +36,7 @@ async fn health_check(){
 #[tokio::test]
 async fn subscribe_returns_400(){
 
-    let address = spawn_app();
+    let address = spawn_app().await;
 
     let client = reqwest::Client::new();
 
@@ -60,7 +59,7 @@ async fn subscribe_returns_400(){
 #[tokio::test]
 async fn subscribe_returns_200(){
 
-    let address = spawn_app();
+    let address = spawn_app().await;
     let client = reqwest::Client::new();
 
     let body = "name=Li%20Dingyi&email=649295818%40qq.com";
@@ -76,10 +75,12 @@ async fn subscribe_returns_200(){
 
 
 //在后台启动应用程序
-fn spawn_app()->String{
+async fn spawn_app()->String{
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind address!");
+    let current_url = get_config().unwrap().database.connext_string();
     let port = listener.local_addr().unwrap().port();
-    let server = emailserver::run(listener).expect("Failed to start server");
+    let connection = MySqlConnection::connect(&current_url).await.expect("fail to connect to database");
+    let server = emailserver::run(listener,connection).expect("Failed to start server");
     tokio::spawn(server);
     format!("http://127.0.0.1:{}",port)
 }
