@@ -1,7 +1,7 @@
 use std::net::TcpListener;
 
 use emailserver::configurations::get_config;
-use sqlx::{Connection, MySqlConnection};
+use sqlx::{Connection, MySqlConnection, MySqlPool};
 
 
 #[tokio::test]
@@ -79,7 +79,7 @@ async fn spawn_app()->String{
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind address!");
     let current_url = get_config().unwrap().database.connext_string();
     let port = listener.local_addr().unwrap().port();
-    let connection = MySqlConnection::connect(&current_url).await.expect("fail to connect to database");
+    let connection = MySqlPool::connect(&current_url).await.expect("fail to connect to database");
     let server = emailserver::run(listener,connection).expect("Failed to start server");
     tokio::spawn(server);
     format!("http://127.0.0.1:{}",port)

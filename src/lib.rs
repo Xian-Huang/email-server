@@ -1,7 +1,8 @@
 use std::net::TcpListener;
 pub mod configurations;
 use actix_web::{body::BoxBody, dev::Server, http::StatusCode, web::{self, Form}, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use sqlx::MySqlConnection;
+use chrono::Utc;
+use sqlx::MySqlPool;
 
 
 
@@ -24,15 +25,26 @@ async fn greet(req: HttpRequest) -> impl Responder {
 }
 
 
-async fn subscribe(form:Form<FormData>,connection:web::Data<MySqlConnection>)->HttpResponse{
-    HttpResponse::Ok().finish()
-
+async fn subscribe(form:Form<FormData>,connection:web::Data<MySqlPool>)->HttpResponse{
+    let now =format!("{}", Utc::now().format("%Y-%m-%d %H:%M:%S"));
+    let result = sqlx::query!(r#"INSERT INTO subscriptions (email, name, subscribed_at) VALUES (?, ?, ?)"#,form.email,form.name,now).execute(connection.get_ref()).await;
+    match result {
+        Ok(_) => {
+            println!("success to insert");
+            HttpResponse::new(StatusCode::from_u16(200).unwrap()).set_body(BoxBody::new("success to insert"))
+        },
+        Err(e) => {
+            println!("Fail to insert:{}",e);
+            HttpResponse::new(StatusCode::from_u16(500).unwrap()).set_body(BoxBody::new("Fail to insert"))
+        },
+    }
+    
 }
 
-pub fn run(listener:TcpListener,dbconnection:MySqlConnection) -> Result<Server, std::io::Error> {
+pub fn run(listener:TcpListener,pool:MySqlPool) -> Result<Server, std::io::Error> {
     let port= listener.local_addr().unwrap().port();
 
-    let connection = web::Data::new(dbconnection);
+    let connection = web::Data::new(pool);
     let server = HttpServer::new(move|| {
         App::new()
             .route("/", web::get().to(greet))
