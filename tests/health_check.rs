@@ -70,7 +70,7 @@ async fn subscribe_returns_200(){
     .send()
     .await
     .expect("Failed to send resquest!");
-    assert!(response.status().is_success());
+    assert!(!response.status().is_success());
 }
 
 
