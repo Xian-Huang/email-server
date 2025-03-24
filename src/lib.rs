@@ -61,8 +61,6 @@ async fn subscribe(form: Form<FormData>, connection: web::Data<MySqlPool>) -> Ht
 }
 
 pub fn run(listener: TcpListener, pool: MySqlPool) -> Result<Server, std::io::Error> {
-    let port = listener.local_addr().unwrap().port();
-
     let connection = web::Data::new(pool);
     let server = HttpServer::new(move || {
         App::new()
