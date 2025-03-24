@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use emailserver::configurations::{self, get_config, DatabaseSettings};
+use emailserver::configurations::{get_config, DatabaseSettings};
 use sqlx::Executor;
 use sqlx::{Connection, MySql, MySqlConnection, MySqlPool, Pool};
 use uuid::Uuid;
