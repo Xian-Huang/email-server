@@ -74,6 +74,5 @@ pub fn run(listener: TcpListener, pool: MySqlPool) -> Result<Server, std::io::Er
     })
     .listen(listener)?
     .run();
-    println!("RUN IN:127.0.0.1:{}", port);
     Ok(server)
 }
