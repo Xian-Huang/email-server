@@ -30,16 +30,13 @@ async fn greet(req: HttpRequest) -> impl Responder {
 async fn subscribe(form: Form<FormData>, connection: web::Data<MySqlPool>) -> HttpResponse {
     let now = format!("{}", Utc::now().format("%Y-%m-%d %H:%M:%S"));
     // 查询是否已经存在相同email的数据
-    let search_result = sqlx::query!(r#"SELECT id FROM subscriptions where email=?"#, form.email)
+    let search_result = sqlx::query(r#"SELECT id FROM subscriptions where email=?"#).bind( &form.email)
         .fetch_one(connection.get_ref())
         .await;
     if let Err(_) = search_result {
-        let result = sqlx::query!(
+        let result = sqlx::query(
             r#"INSERT INTO subscriptions (email, name, subscribed_at) VALUES (?, ?, ?)"#,
-            form.email,
-            form.name,
-            now
-        )
+        ).bind(&form.email).bind(&form.name).bind(now)
         .execute(connection.get_ref())
         .await;
         match result {

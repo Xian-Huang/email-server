@@ -8,10 +8,13 @@ actix-web = "4.9.0"
 chrono = "0.4.38"
 config = "0.14.1"
 env_logger = "0.11.7"
+log = "0.4.27"
 reqwest = "0.12.9"
 serde = { version = "1.0.214", features = ["derive","serde_derive"] }
 sqlx = { version = "0.8.2", features = ["default", "mysql", "runtime-tokio"] }
 tokio = { version = "1.41.0", features = ["macros", "rt-multi-thread"] }
+trace = "0.1.7"
+tracing = {version = "0.1.41",features=["log"]}
 uuid = { version = "1.11.0",features=['v4']}
 
 

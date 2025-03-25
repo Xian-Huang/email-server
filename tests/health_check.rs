@@ -10,7 +10,7 @@ async fn database_connect() {
         .await
         .expect("Faile to connect database");
     println!("connect to {connect_url} sccuess");
-    let saved = sqlx::query!("SELECT email,name FROM subscriptions",)
+    let saved = sqlx::query!("SELECT email,name FROM subscriptions")
         .fetch_one(&mut connection)
         .await
         .expect("query error");
